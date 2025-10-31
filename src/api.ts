@@ -2,7 +2,6 @@ import type {
 	ErrorResponse,
 	Health,
 	OkResponse,
-	Session,
 	SessionsResponse,
 	UsersListResponse,
 	User,
