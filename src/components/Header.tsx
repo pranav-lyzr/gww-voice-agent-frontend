@@ -1,4 +1,4 @@
-import { Headphones, LayoutDashboard, Users } from 'lucide-react'
+import { Headphones, LayoutDashboard, Users, MessageSquare } from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom'
 
 export function Header() {
@@ -12,8 +12,8 @@ export function Header() {
             <Headphones size={20} />
           </div>
           <div className="brand-text">
-            <h1 className="brand-title">Call Center Dashboard</h1>
-            <span className="brand-subtitle">Voice Session Management</span>
+            <h1 className="brand-title" style={{ color: '#111827', fontWeight: 700 }}>Call Center Dashboard</h1>
+            <span className="brand-subtitle" style={{ color: '#6B7280' }}>Voice Session Management</span>
           </div>
         </div>
         <nav className="nav-links" aria-label="Primary">
@@ -24,6 +24,10 @@ export function Header() {
           <Link className={"nav-link" + (isActive('/users') ? ' nav-link-active' : '')} to="/users">
             <Users size={16} />
             <span>Users</span>
+          </Link>
+          <Link className={"nav-link" + (isActive('/conversations') ? ' nav-link-active' : '')} to="/conversations">
+            <MessageSquare size={16} />
+            <span>Conversations</span>
           </Link>
         </nav>
       </div>

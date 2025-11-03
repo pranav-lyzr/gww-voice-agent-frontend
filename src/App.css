@@ -58,8 +58,8 @@ body {
   display: grid;
   place-items: center;
   border-radius: 8px;
-  background: #e8f0ff;
-  color: #2b6cf0;
+  background: #FEF3C7;
+  color: #F59E0B;
   font-weight: 700;
 }
 
@@ -100,8 +100,9 @@ body {
 }
 
 .nav-link-active {
-  background: #e8f0ff;
-  border-color: #dbe7ff;
+  background: #111827;
+  color: #ffffff;
+  border-color: #111827;
 }
 
 /* Cards */
@@ -146,9 +147,9 @@ body {
 }
 
 .badge-primary {
-  background: #e8f0ff;
-  color: #2b6cf0;
-  border-color: #dbe7ff;
+  background: #FEF3C7;
+  color: #92400E;
+  border-color: #FDE68A;
 }
 
 /* Buttons */
@@ -174,13 +175,13 @@ body {
 }
 
 .btn-primary {
-  background: #2b6cf0;
+  background: #111827;
   color: #ffffff;
-  border-color: #2b6cf0;
+  border-color: #111827;
 }
 
 .btn-primary:hover {
-  background: #255ed3;
+  background: #000000;
 }
 
 /* Ensure lucide icons are visible on white */

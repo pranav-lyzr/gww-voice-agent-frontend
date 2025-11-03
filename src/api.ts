@@ -10,6 +10,11 @@ import type {
 	ConversationResponse,
 	LogsResponse,
 	ValidateOtpResponse,
+	DashboardAnalyticsResponse,
+	UserAnalyticsResponse,
+	CreateUserRequest,
+	CreateUserResponse,
+	DeleteUserResponse,
 } from './types';
 
 const API_BASE_URL: string = (import.meta as any).env?.VITE_API_BASE_URL || 'http://localhost:8000';
@@ -87,6 +92,17 @@ export const api = {
 	async getUsers(): Promise<UsersListResponse> {
 		return requestJson<UsersListResponse>('/users');
 	},
+	async createUser(user: CreateUserRequest): Promise<CreateUserResponse> {
+		return requestJson<CreateUserResponse>('/users', {
+			method: 'POST',
+			body: JSON.stringify(user),
+		});
+	},
+	async deleteUser(phoneNumber: string): Promise<DeleteUserResponse> {
+		return requestJson<DeleteUserResponse>(`/users/${encodeURIComponent(phoneNumber)}`, {
+			method: 'DELETE',
+		});
+	},
 	async getUserByPhone(phoneNumber: string): Promise<User> {
 		return requestJson<User>(`/users/by-phone/${encodeURIComponent(phoneNumber)}`);
 	},
@@ -127,5 +143,13 @@ export const api = {
 	// Data exports (optional helpers)
 	async getDataUsers(): Promise<UsersListResponse> {
 		return requestJson<UsersListResponse>('/data/users');
+	},
+
+	// Analytics
+	async getUserAnalytics(): Promise<UserAnalyticsResponse> {
+		return requestJson<UserAnalyticsResponse>('/analytics/users');
+	},
+	async getDashboardAnalytics(): Promise<DashboardAnalyticsResponse> {
+		return requestJson<DashboardAnalyticsResponse>('/analytics/dashboard');
 	},
 };
