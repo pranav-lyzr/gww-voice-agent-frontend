@@ -139,7 +139,11 @@ export function ConversationsPanel() {
       setLoading(true)
       setError(null)
       const response = await api.getConversations(100, 0)
-      setConversations(response.items)
+      // Sort by start_time descending (latest first)
+      const sortedConversations = [...response.items].sort((a, b) => {
+        return new Date(b.start_time).getTime() - new Date(a.start_time).getTime()
+      })
+      setConversations(sortedConversations)
     } catch (e: any) {
       setError(e.message || 'Failed to load conversations')
     } finally {
