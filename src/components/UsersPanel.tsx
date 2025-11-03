@@ -45,6 +45,10 @@ if (typeof document !== 'undefined') {
       from { transform: rotate(0deg); }
       to { transform: rotate(360deg); }
     }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateX(-10px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
     @keyframes modalFadeIn {
       from {
         opacity: 0;
@@ -155,14 +159,27 @@ export function UsersPanel() {
   const [createLoading, setCreateLoading] = useState(false)
   const [createError, setCreateError] = useState<string | null>(null)
   const [deleteLoading, setDeleteLoading] = useState<string | null>(null)
+  const [isAutoRefreshing, setIsAutoRefreshing] = useState(false)
 
   useEffect(() => {
     void refresh()
+    
+    // Set up auto-refresh every 5 seconds
+    const intervalId = setInterval(() => {
+      void refresh(true) // Pass true to indicate auto-refresh
+    }, 5000)
+
+    // Cleanup interval on unmount
+    return () => clearInterval(intervalId)
   }, [])
 
-  async function refresh() {
+  async function refresh(isAuto = false) {
     try {
-      setLoading(true)
+      if (isAuto) {
+        setIsAutoRefreshing(true)
+      } else {
+        setLoading(true)
+      }
       setError(null)
       // Use analytics endpoint for user data
       const response = await api.getUserAnalytics()
@@ -170,7 +187,11 @@ export function UsersPanel() {
     } catch (e: any) {
       setError(e.message || 'Failed to load users')
     } finally {
-      setLoading(false)
+      if (isAuto) {
+        setIsAutoRefreshing(false)
+      } else {
+        setLoading(false)
+      }
     }
   }
 
@@ -266,24 +287,24 @@ export function UsersPanel() {
             </button>
             <button
               className="btn"
-              onClick={refresh}
+              onClick={() => refresh(false)}
               disabled={loading}
               style={{
                 display: 'flex',
                 alignItems: 'center',
                 gap: 6,
                 minWidth: 100,
-                background: 'white',
-                color: '#111827',
-                border: '1px solid #E5E7EB',
+                background: isAutoRefreshing ? '#DBEAFE' : 'white',
+                color: isAutoRefreshing ? '#1E40AF' : '#111827',
+                border: `1px solid ${isAutoRefreshing ? '#93C5FD' : '#E5E7EB'}`,
                 fontWeight: 600,
-                transition: 'all 0.2s'
+                transition: 'all 0.3s'
               }}
-              onMouseEnter={(e) => !loading && (e.currentTarget.style.background = '#F9FAFB')}
-              onMouseLeave={(e) => !loading && (e.currentTarget.style.background = 'white')}
+              onMouseEnter={(e) => !loading && !isAutoRefreshing && (e.currentTarget.style.background = '#F9FAFB')}
+              onMouseLeave={(e) => !loading && !isAutoRefreshing && (e.currentTarget.style.background = 'white')}
             >
-              <RefreshCw size={16} style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }} />
-              <span>{loading ? 'Loading...' : 'Refresh'}</span>
+              <RefreshCw size={16} style={{ animation: (loading || isAutoRefreshing) ? 'spin 1s linear infinite' : 'none' }} />
+              <span>{loading ? 'Loading...' : isAutoRefreshing ? 'Auto Refreshing...' : 'Refresh'}</span>
             </button>
           </div>
         </div>

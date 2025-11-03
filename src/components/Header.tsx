@@ -1,4 +1,4 @@
-import { Headphones, LayoutDashboard, Users, MessageSquare } from 'lucide-react'
+import { LayoutDashboard, Users, MessageSquare } from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom'
 
 export function Header() {
@@ -8,8 +8,8 @@ export function Header() {
     <div className="navbar">
       <div className="navbar-inner">
         <div className="brand">
-          <div className="brand-logo" aria-hidden>
-            <Headphones size={20} />
+          <div className="brand-logo" aria-hidden style={{ marginRight: '16px' }}>
+            <img src="/logo.svg" alt="Logo" style={{ height: '32px', width: 'auto' }} />
           </div>
           <div className="brand-text">
             <h1 className="brand-title" style={{ color: '#111827', fontWeight: 700 }}>Call Center Dashboard</h1>
