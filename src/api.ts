@@ -17,7 +17,7 @@ import type {
 	DeleteUserResponse,
 } from './types';
 
-const API_BASE_URL: string = (import.meta as any).env?.VITE_API_BASE_URL || 'http://localhost:8000';
+const API_BASE_URL: string = (import.meta as any).env?.VITE_API_BASE_URL || 'https://gww-voice-agent-backend.ca.lyzr.app';
 
 function buildUrl(path: string): string {
 	return `${API_BASE_URL}${path.startsWith('/') ? '' : '/'}${path}`;
