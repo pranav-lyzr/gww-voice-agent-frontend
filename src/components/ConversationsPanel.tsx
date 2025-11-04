@@ -1,5 +1,5 @@
-import { useEffect, useState, useRef } from 'react'
-import { MessageSquare, RefreshCw, Eye, X } from 'lucide-react'
+import { useEffect, useState, useRef, useCallback } from 'react'
+import { MessageSquare, RefreshCw, Eye, X, ChevronLeft, ChevronRight } from 'lucide-react'
 import { api } from '../api'
 import type { ConversationItem, ConversationTurn } from '../types'
 
@@ -122,10 +122,32 @@ export function ConversationsPanel() {
   const [displayedMessages, setDisplayedMessages] = useState<ConversationTurn[]>([])
   const [isStreaming, setIsStreaming] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalCount, setTotalCount] = useState(0)
+  const itemsPerPage = 8
+
+  const refresh = useCallback(async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      const offset = (currentPage - 1) * itemsPerPage
+      const response = await api.getConversations(itemsPerPage, offset)
+      // Sort by start_time descending (latest first)
+      const sortedConversations = [...response.items].sort((a, b) => {
+        return new Date(b.start_time).getTime() - new Date(a.start_time).getTime()
+      })
+      setConversations(sortedConversations)
+      setTotalCount(response.count)
+    } catch (e: any) {
+      setError(e.message || 'Failed to load conversations')
+    } finally {
+      setLoading(false)
+    }
+  }, [currentPage, itemsPerPage])
 
   useEffect(() => {
     void refresh()
-  }, [])
+  }, [refresh])
 
   useEffect(() => {
     // Auto-scroll to bottom when new messages are displayed
@@ -134,20 +156,13 @@ export function ConversationsPanel() {
     }
   }, [displayedMessages, isStreaming])
 
-  async function refresh() {
-    try {
-      setLoading(true)
-      setError(null)
-      const response = await api.getConversations(100, 0)
-      // Sort by start_time descending (latest first)
-      const sortedConversations = [...response.items].sort((a, b) => {
-        return new Date(b.start_time).getTime() - new Date(a.start_time).getTime()
-      })
-      setConversations(sortedConversations)
-    } catch (e: any) {
-      setError(e.message || 'Failed to load conversations')
-    } finally {
-      setLoading(false)
+  const totalPages = Math.ceil(totalCount / itemsPerPage)
+  const startItem = totalCount === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1
+  const endItem = Math.min(currentPage * itemsPerPage, totalCount)
+
+  function handlePageChange(page: number) {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page)
     }
   }
 
@@ -188,7 +203,11 @@ export function ConversationsPanel() {
             <div>
               <div style={{ fontSize: 20, fontWeight: 600, color: '#111827' }}>Conversations</div>
               <div style={{ fontSize: 13, color: '#6B7280', marginTop: 2 }}>
-                {conversations.length} {conversations.length === 1 ? 'conversation' : 'conversations'} total
+                {totalCount > 0 ? (
+                  <>Showing {startItem}-{endItem} of {totalCount} conversations</>
+                ) : (
+                  <>No conversations found</>
+                )}
               </div>
             </div>
           </div>
@@ -318,6 +337,123 @@ export function ConversationsPanel() {
                 )}
               </tbody>
             </table>
+          </div>
+        )}
+
+        {/* Pagination Controls */}
+        {!loading && totalCount > 0 && (
+          <div style={{
+            padding: '20px 24px',
+            borderTop: '1px solid #E5E7EB',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            background: '#FAFAFA',
+            flexWrap: 'wrap',
+            gap: 16
+          }}>
+            <div style={{ fontSize: 14, color: '#6B7280' }}>
+              Page {currentPage} of {totalPages}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <button
+                className="btn"
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  padding: '8px 14px',
+                  fontSize: 13,
+                  opacity: currentPage === 1 ? 0.5 : 1,
+                  cursor: currentPage === 1 ? 'not-allowed' : 'pointer'
+                }}
+              >
+                <ChevronLeft size={16} />
+                <span>Previous</span>
+              </button>
+              
+              {/* Page Numbers */}
+              <div style={{ display: 'flex', gap: 4 }}>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                  // Show first page, last page, current page, and pages around current
+                  if (
+                    page === 1 ||
+                    page === totalPages ||
+                    (page >= currentPage - 1 && page <= currentPage + 1)
+                  ) {
+                    return (
+                      <button
+                        key={page}
+                        onClick={() => handlePageChange(page)}
+                        style={{
+                          padding: '8px 12px',
+                          fontSize: 13,
+                          fontWeight: page === currentPage ? 600 : 500,
+                          color: page === currentPage ? '#111827' : '#6B7280',
+                          background: page === currentPage ? '#EFF6FF' : 'white',
+                          border: `1px solid ${page === currentPage ? '#3B82F6' : '#E5E7EB'}`,
+                          borderRadius: 6,
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease',
+                          minWidth: 40
+                        }}
+                        onMouseEnter={(e) => {
+                          if (page !== currentPage) {
+                            e.currentTarget.style.background = '#F9FAFB'
+                            e.currentTarget.style.borderColor = '#D1D5DB'
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (page !== currentPage) {
+                            e.currentTarget.style.background = 'white'
+                            e.currentTarget.style.borderColor = '#E5E7EB'
+                          }
+                        }}
+                      >
+                        {page}
+                      </button>
+                    )
+                  } else if (
+                    page === currentPage - 2 ||
+                    page === currentPage + 2
+                  ) {
+                    return (
+                      <span
+                        key={page}
+                        style={{
+                          padding: '8px 4px',
+                          fontSize: 13,
+                          color: '#9CA3AF'
+                        }}
+                      >
+                        ...
+                      </span>
+                    )
+                  }
+                  return null
+                })}
+              </div>
+
+              <button
+                className="btn"
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  padding: '8px 14px',
+                  fontSize: 13,
+                  opacity: currentPage === totalPages ? 0.5 : 1,
+                  cursor: currentPage === totalPages ? 'not-allowed' : 'pointer'
+                }}
+              >
+                <span>Next</span>
+                <ChevronRight size={16} />
+              </button>
+            </div>
           </div>
         )}
       </div>
